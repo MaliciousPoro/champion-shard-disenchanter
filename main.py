@@ -25,8 +25,7 @@ def cls():
 async def update_champs_map(connection):
     global champions_map
 
-    champions = await connection.request('get',
-                                         '/lol-champions/v1/inventories/{0}/champions-minimal'.format(summoner_id))
+    champions = await connection.request('get', '/lol-champions/v1/inventories/{0}/champions-minimal'.format(summoner_id))
     champions_json = await champions.json()
 
     for i in range(len(champions_json)):
@@ -36,8 +35,7 @@ async def update_champs_map(connection):
 async def update_masteries(connection):
     global masteries_json
 
-    masteries = await connection.request('get',
-                                         '/lol-collections/v1/inventories/{0}/champion-mastery'.format(summoner_id))
+    masteries = await connection.request('get', '/lol-collections/v1/inventories/{0}/champion-mastery'.format(summoner_id))
     masteries_json = await masteries.json()
 
 
@@ -153,7 +151,7 @@ async def display_shard_skins_owned_and_mastery_token_info(connection):
 
     if total_disenchant_value > 0:
         print(
-            '{0}If you disenchant all the shards above you will gain {1} BE.{2}\n'.format(
+            '{0}If you disenchant all the shards above you will get {1} BE.{2}\n'.format(
                 colorama.Fore.LIGHTYELLOW_EX,
                 total_disenchant_value,
                 colorama.Fore.RESET)
@@ -286,7 +284,7 @@ async def disconnect(_):
 
 @connector.ws.register('/lol-gameflow/v1/gameflow-phase', event_types=('UPDATE',))
 async def state_changed(connection, event):
-    # Just to keep the even loop going. Any state change will update the program.
+    # Just to keep the event loop going. Any state change will update the program.
     cls()
     await display_summoner_initial_data(connection)
 
