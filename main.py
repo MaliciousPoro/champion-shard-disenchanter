@@ -277,8 +277,7 @@ async def disconnect(_):
     if connected:
         connected = False
         cls()
-        print('{0}Disconnected. Restart the program to connect again.{1}\n'.format(colorama.Fore.LIGHTRED_EX,
-                                                                                   colorama.Fore.RESET))
+        print('{0}Disconnected. Restart the program to connect again.{1}\n'.format(colorama.Fore.LIGHTRED_EX, colorama.Fore.RESET))
         await connector.stop()
 
 
