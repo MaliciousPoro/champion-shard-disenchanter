@@ -112,6 +112,19 @@ async def display_shard_skins_owned_and_mastery_token_info(connection):
         champ_id = champion_shard['storeItemId']
         amount = champion_shard['count']
 
+        if amount >= 3:
+            total_disenchant_value += champion_shard['disenchantValue'] * (amount - 2)
+            print(
+                '{0}You can disenchant {1}{2} shard(s) for {3}{4} since you have over 2 shards.'.format(
+                    colorama.Fore.LIGHTCYAN_EX,
+                    colorama.Fore.LIGHTGREEN_EX,
+                    amount - 2,
+                    champions_map[champ_id],
+                    colorama.Fore.LIGHTCYAN_EX,
+                    amount,
+                    colorama.Fore.RESET)
+            )
+
         for champ_mastery in masteries_json:
             if champ_mastery['championId'] == champ_id:
                 if champ_mastery['championLevel'] == 7:
@@ -162,66 +175,6 @@ async def display_shard_skins_owned_and_mastery_token_info(connection):
                 colorama.Fore.LIGHTYELLOW_EX,
                 colorama.Fore.RESET)
         )
-
-
-async def check_sale_unowned_skins(connection):
-    sales = await connection.request('get', '/lol-store/v1/catalog/sales')
-    sales_json = await sales.json()
-    active_skin_sales_json = [x for x in sales_json if x['active'] and x['item']['inventoryType'] == 'CHAMPION_SKIN']
-
-    champ_skins = await connection.request('get', '/lol-champions/v1/inventories/{0}/skins-minimal'.format(summoner_id))
-    champ_skins_json = await champ_skins.json()
-    owned_champ_id_skins = {x['championId'] for x in champ_skins_json if x['ownership']['owned'] and not x['isBase']}
-
-    champs = await connection.request('get', '/lol-champions/v1/owned-champions-minimal')
-    champs_json = await champs.json()
-    owned_champs = {x['id'] for x in champs_json if x['ownership']['owned']}
-
-    owned_champs_without_skin_id = owned_champs - owned_champ_id_skins
-
-    loot = await connection.request('get', '/lol-loot/v1/player-loot-map')
-    loot_json = await loot.json()
-
-    skin_shard_list = [x for x in loot_json.values() if x['displayCategories'] == 'SKIN']
-
-    first = True
-    for active_skin_sale in active_skin_sales_json:
-        for champ_skin in champ_skins_json:
-            if active_skin_sale['item']['itemId'] == champ_skin['id'] and champ_skin['championId'] in owned_champs_without_skin_id:
-
-                shard_skin_name = ''
-                for skin_shard in skin_shard_list:
-                    if skin_shard['parentStoreItemId'] == champ_skin['championId']:
-                        # Found shard for a champ without skin
-                        shard_skin_name += '{0} ({1} RP), '.format(skin_shard['itemDesc'], skin_shard['value'])
-
-                if first:
-                    first = False
-                    print('{0}- - Discounted skins on sale for champs you don\'t have any - -{1}'.format(
-                        colorama.Fore.LIGHTMAGENTA_EX, colorama.Fore.RESET))
-
-                if shard_skin_name == '':
-                    # Found no shard
-                    print('{0}Champ: {1}. Skin: {2}. Discounted price: {3} RP. {4}\n'.format(
-                        colorama.Fore.LIGHTYELLOW_EX,
-                        champions_map[champ_skin['championId']],
-                        champ_skin['name'],
-                        active_skin_sale['sale']['prices'][0]['cost'],
-                        colorama.Fore.RESET)
-                    )
-                else:
-                    # Found shard(s)
-                    print(
-                        '{0}Champ: {1}. Skin: {2}. Discounted price: {3} RP. {4}You have skin shards to craft: {5}.{6}\n'.format(
-                            colorama.Fore.LIGHTYELLOW_EX,
-                            champions_map[champ_skin['championId']],
-                            champ_skin['name'],
-                            active_skin_sale['sale']['prices'][0]['cost'],
-                            colorama.Fore.LIGHTRED_EX,
-                            shard_skin_name[:-2],
-                            colorama.Fore.RESET)
-                    )
-                break
 
 
 async def display_summoner_initial_data(connection):
